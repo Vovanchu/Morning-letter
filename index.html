@@ -3,39 +3,99 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Конверт із листом</title>
+    <title>Лист із конверта</title>
     <style>
       body {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background: #f5f5f5;
+        background: linear-gradient(to right, #ffafbd, #ffc3a0);
         margin: 0;
         overflow: hidden;
+        flex-direction: column;
+        font-family: "Arial", sans-serif;
+      }
+
+      .dialog {
+        position: absolute;
+        width: 90%;
+        max-width: 320px;
+        background: white;
+        padding: 20px;
+        text-align: center;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transform: scale(0.9);
+        opacity: 0;
+        transition: transform 0.5s ease, opacity 0.5s ease;
+      }
+
+      .dialog.show {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      .dialog p {
+        font-size: 18px;
+        font-weight: bold;
+        color: #444;
+      }
+
+      .dialog button {
+        padding: 12px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s, transform 0.2s;
+      }
+
+      .dialog button:hover {
+        transform: scale(1.05);
+      }
+
+      .yes {
+        background: #ff758c;
+        color: white;
+      }
+      .no {
+        background: #ffb199;
+        color: white;
+      }
+
+      .hidden {
+        display: none;
       }
 
       .envelope-container {
-        position: relative;
-        width: 300px;
-        height: 200px;
+        position: absolute;
+        width: 250px;
+        height: 170px;
         cursor: pointer;
+        transform: translateY(50vh);
+        transition: transform 1s ease-in-out;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       .envelope {
-        position: absolute;
+        top: 100%;
         width: 100%;
         height: 100%;
         background: #f4c27c;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         border-radius: 5px;
-        overflow: hidden;
+        position: relative;
       }
 
       .flap {
         position: absolute;
         top: 0;
-        left: 0;
         width: 100%;
         height: 100px;
         background: #e3a55b;
@@ -53,97 +113,98 @@
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
         border-radius: 5px;
         text-align: center;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: bold;
-        padding: 20px;
+        padding: 15px;
         box-sizing: border-box;
         transform: rotate(0deg) scale(0.8);
         opacity: 0;
         transition: transform 0.8s ease-in-out, opacity 0.5s ease-in-out;
       }
 
-      /* Анімація відкриття */
       .open .flap {
         transform: rotateX(-180deg);
-        transform-origin: top;
-        transition: transform 0.6s ease-in-out;
       }
 
       .open .letter {
-        transform: translateY(-180px) rotate(360deg) scale(1);
+        transform: translateY(-150px) rotate(360deg) scale(1);
         opacity: 1;
       }
 
-      /* Стилі для конфеті */
-      .confetti {
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        background-color: red;
-        opacity: 0.7;
-        border-radius: 50%;
-        animation: fall linear infinite;
-      }
-
-      @keyframes fall {
-        from {
-          transform: translateY(-100vh) translateX(0);
-          opacity: 1;
+      /* Адаптація для телефонів */
+      @media (max-width: 480px) {
+        .envelope-container {
+          width: 200px;
+          height: 140px;
         }
-        to {
-          transform: translateY(100vh) translateX(50px);
-          opacity: 0;
+
+        .dialog p {
+          font-size: 16px;
+        }
+
+        .dialog button {
+          font-size: 14px;
+          padding: 10px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="envelope-container" onclick="openEnvelope()">
+    <div class="dialog show" id="dialog1">
+      <p>🌞 Добрий раночок! Як спалося?</p>
+      <button class="yes" onclick="nextQuestion(1)">Добре 😌</button>
+      <button class="no" onclick="nextQuestion(1)">Не дуже 😞</button>
+    </div>
+
+    <div class="dialog hidden" id="dialog2">
+      <p>😴 Чи виспалася?</p>
+      <button class="yes" onclick="nextQuestion(2)">Так 😍</button>
+      <button class="no" onclick="nextQuestion(2)">Ні 😴</button>
+    </div>
+
+    <div class="dialog hidden" id="dialog3">
+      <p>🎁 Готова до сюрпризу?</p>
+      <button class="yes" onclick="showEnvelope()">Так! 🎁</button>
+      <button class="no" onclick="showEnvelope()">Звичайно! 🥰</button>
+    </div>
+
+    <div class="envelope-container" id="envelope" onclick="openEnvelope()">
       <div class="envelope">
         <div class="flap"></div>
       </div>
       <div class="letter">
-        Кохана, доброго ранку, ось моя листівочка на сьогодні💖🩵 Бажаю тобі
-        неперевершиного дня і будь весь день весела і щаслива💏🥰😘
+        Кохана, доброго ранку! 💖 Бажаю тобі чудового дня! 🥰
       </div>
     </div>
 
-    <audio id="openSound" src="./Нумер 482 - Добрий ранок, Україно.mp3"></audio>
-
     <script>
+      function nextQuestion(step) {
+        document.getElementById(`dialog${step}`).classList.remove("show");
+        setTimeout(() => {
+          document.getElementById(`dialog${step}`).classList.add("hidden");
+          if (document.getElementById(`dialog${step + 1}`)) {
+            document
+              .getElementById(`dialog${step + 1}`)
+              .classList.remove("hidden");
+            setTimeout(() => {
+              document
+                .getElementById(`dialog${step + 1}`)
+                .classList.add("show");
+            }, 10);
+          }
+        }, 300);
+      }
+
+      function showEnvelope() {
+        document.getElementById("dialog3").classList.remove("show");
+        setTimeout(() => {
+          document.getElementById("dialog3").classList.add("hidden");
+          document.getElementById("envelope").style.transform = "translateY(0)";
+        }, 300);
+      }
+
       function openEnvelope() {
-        const envelope = document.querySelector(".envelope-container");
-        envelope.classList.toggle("open");
-
-        // Відтворити звук при відкритті
-        if (envelope.classList.contains("open")) {
-          document.getElementById("openSound").play();
-          createConfetti();
-        }
-      }
-
-      function createConfetti() {
-        for (let i = 0; i < 50; i++) {
-          let confetti = document.createElement("div");
-          confetti.classList.add("confetti");
-          confetti.style.backgroundColor = getRandomColor();
-          confetti.style.left = `${Math.random() * window.innerWidth}px`;
-          confetti.style.animationDuration = `${Math.random() * 2 + 2}s`;
-          document.body.appendChild(confetti);
-        }
-      }
-
-      function getRandomColor() {
-        const colors = [
-          "#ff0d00",
-          "#ff7300",
-          "#ffd700",
-          "#008000",
-          "#0000ff",
-          "#4b0082",
-          "#ee82ee",
-        ];
-        return colors[Math.floor(Math.random() * colors.length)];
+        document.getElementById("envelope").classList.add("open");
       }
     </script>
   </body>
